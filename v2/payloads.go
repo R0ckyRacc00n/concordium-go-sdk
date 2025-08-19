@@ -30,6 +30,8 @@ const (
 	RegisterDataPayloadType PayloadType = 21
 	// TransferWithMemoPayloadType defines TransferWithMemoPayload type byte.
 	TransferWithMemoPayloadType PayloadType = 22
+	// TokenUpdatePayloadType defines TokenUpdatePayload type byte.
+	TokenUpdatePayloadType PayloadType = 27
 )
 
 // GetPayloadType returns PayloadType byte from transmitted AccountTransactionPayload.
@@ -47,6 +49,8 @@ func GetPayloadType(payload AccountTransactionPayload) (PayloadType, error) {
 		return RegisterDataPayloadType, nil
 	case *TransferWithMemo:
 		return TransferWithMemoPayloadType, nil
+	case *TokenUpdate:
+		return TokenUpdatePayloadType, nil
 	}
 	return 0xff, ErrInvalidPayloadType
 }
@@ -83,6 +87,11 @@ func decode(payloadBytes []byte) (payload *AccountTransactionPayload, err error)
 		transferWithMemoPayload := new(TransferWithMemoPayload)
 		err = transferWithMemoPayload.Decode(payloadBytes[PayloadTypeSize:])
 		payload.Payload = TransferWithMemo{Payload: transferWithMemoPayload}
+	case TokenUpdatePayloadType:
+		tokenUpdatePayload := new(TokenOperationsPayload)
+		err = tokenUpdatePayload.Decode(payloadBytes[PayloadTypeSize:])
+		payload.Payload = TokenUpdate{Payload: tokenUpdatePayload}
+
 	}
 	if err != nil {
 		return nil, err
@@ -484,4 +493,74 @@ func (payload *UpdateContractPayload) Size() int {
 	}
 
 	return 28 + len(payload.ReceiveName.Value) + len(payload.Parameter.Value)
+}
+
+// TokenOperationsPayload
+// / Payload for protocol level transaction. The transaction is a list of token
+// / operations that can be decoded from CBOR using
+// / [`TokenOperationsPayload::decode_operations`]. Operations includes
+// / governance operations, transfers etc.
+type TokenOperationsPayload struct {
+	TokenId    TokenID
+	Operations RawCBOR
+}
+
+type TokenID []byte
+type RawCBOR struct {
+	Bytes []byte
+}
+
+func (payload *TokenOperationsPayload) isAccountTransactionPayload() {}
+
+func (payload *TokenOperationsPayload) Size() int {
+	if payload.TokenId == nil {
+		payload.TokenId = make(TokenID, 0)
+	}
+	if payload.Operations.Bytes == nil {
+		payload.Operations.Bytes = make([]byte, 0)
+	}
+	return 2 + len(payload.TokenId) + 2 + len(payload.Operations.Bytes)
+}
+
+func (payload *TokenOperationsPayload) Encode() *RawPayload {
+	buf := make([]byte, 0, payload.Size()+1)
+	buf = append(buf, byte(TokenUpdatePayloadType))
+	buf = binary.BigEndian.AppendUint16(buf, uint16(len(payload.TokenId)))
+	buf = append(buf, payload.TokenId...)
+	buf = binary.BigEndian.AppendUint16(buf, uint16(len(payload.Operations.Bytes)))
+	buf = append(buf, payload.Operations.Bytes...)
+
+	return &RawPayload{Value: buf}
+}
+
+// Decode decodes bytes into TokenOperationsPayload.
+func (payload *TokenOperationsPayload) Decode(source []byte) error {
+	if len(source) < 4 {
+		return ErrInvalidRawPayloadSize
+	}
+
+	// Read TokenID length.
+	tokenIDLen := binary.BigEndian.Uint16(source[:2])
+	if len(source) < int(2+tokenIDLen+2) {
+		return ErrInvalidRawPayloadSize
+	}
+
+	// Read TokenID.
+	payload.TokenId = make(TokenID, tokenIDLen)
+	copy(payload.TokenId, source[2:2+tokenIDLen])
+
+	// Read RawCBOR length.
+	cborStart := 2 + tokenIDLen
+	cborLen := binary.BigEndian.Uint16(source[cborStart : cborStart+2])
+	if len(source) != int(cborStart+2+cborLen) {
+		return ErrInvalidRawPayloadSize
+	}
+
+	// Read RawCBOR bytes.
+	payload.Operations = RawCBOR{
+		Bytes: make([]byte, cborLen),
+	}
+	copy(payload.Operations.Bytes, source[cborStart+2:])
+
+	return nil
 }

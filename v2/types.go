@@ -769,6 +769,16 @@ func (transferWithMemo TransferWithMemo) Encode() *RawPayload {
 	return transferWithMemo.Payload.Encode()
 }
 
+// TokenUpdate payload of protocol level token update transaction.
+type TokenUpdate struct {
+	Payload *TokenOperationsPayload
+}
+
+func (TokenUpdate) isAccountTransactionPayload() {}
+func (tokenUpdate TokenUpdate) Encode() *RawPayload {
+	return tokenUpdate.Payload.Encode()
+}
+
 // Memo a memo which can be included as part of a transfer. Max size is 256 bytes.
 type Memo struct {
 	Value []byte
