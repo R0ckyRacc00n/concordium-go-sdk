@@ -1,5 +1,12 @@
 package v2
 
+import (
+	"context"
+	"fmt"
+	"github.com/Concordium/concordium-go-sdk/v2/pb"
+	"io"
+)
+
 // Cbor A CBOR encoded bytestring
 type Cbor struct {
 	Value []byte
@@ -95,4 +102,39 @@ type CreatePLT struct {
 type TokenCreationDetails struct {
 	CreatePlt CreatePLT
 	Events    []TokenEvent
+}
+
+func (c *Client) GetPLTList(ctx context.Context, blockHash *pb.BlockHashInput) ([]*pb.TokenId, error) {
+	stream, err := c.GrpcClient.GetTokenList(ctx, blockHash)
+	if err != nil {
+		return nil, fmt.Errorf("failed to call GetTokenList: %w", err)
+	}
+
+	var tokens []*pb.TokenId
+	for {
+		token, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("error reading token stream: %w", err)
+		}
+		tokens = append(tokens, token)
+	}
+
+	return tokens, nil
+}
+
+func (c *Client) GetTokenInfo(ctx context.Context, blockHash *pb.BlockHashInput, tokenId *pb.TokenId) (*pb.TokenInfo, error) {
+	req := &pb.TokenInfoRequest{
+		BlockHash: blockHash,
+		TokenId:   tokenId,
+	}
+
+	info, err := c.GrpcClient.GetTokenInfo(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get token info: %w", err)
+	}
+
+	return info, nil
 }
