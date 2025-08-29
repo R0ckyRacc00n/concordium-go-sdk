@@ -2,6 +2,7 @@ package v2
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/Concordium/concordium-go-sdk/v2/pb"
 	"io"
@@ -90,14 +91,6 @@ type TokenModuleRejectReason struct {
 	Details *Cbor // optional
 }
 
-// CreatePLT Update payload for creating a new protocol-level token
-type CreatePLT struct {
-	TokenId                  TokenId
-	TokenModule              TokenModuleRef
-	Decimals                 uint32
-	InitializationParameters Cbor
-}
-
 // TokenCreationDetails Details about the creation of a protocol-level token.
 type TokenCreationDetails struct {
 	CreatePlt CreatePLT
@@ -113,7 +106,7 @@ func (c *Client) GetPLTList(ctx context.Context, blockHash *pb.BlockHashInput) (
 	var tokens []*pb.TokenId
 	for {
 		token, err := stream.Recv()
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break
 		}
 		if err != nil {
