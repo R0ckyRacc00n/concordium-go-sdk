@@ -100,9 +100,9 @@ type UpdateKeysIndex uint8
 // UpdateKeyPair is similar to Account KeyPair but for update instructions.
 type UpdateKeyPair struct {
 	// secret describes `signKey`.
-	Secret ed25519.PrivateKey
+	secret ed25519.PrivateKey
 	// public describes `verifyKey`.
-	Public ed25519.PublicKey
+	public ed25519.PublicKey
 }
 
 // UpdateInstructionSignature transaction signature.
