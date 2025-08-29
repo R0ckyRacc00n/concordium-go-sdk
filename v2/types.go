@@ -10,6 +10,7 @@ import (
 
 	"github.com/Concordium/concordium-go-sdk/v2/pb"
 	"github.com/btcsuite/btcutil/base58"
+	"github.com/fxamacker/cbor/v2"
 )
 
 const (
@@ -18,6 +19,7 @@ const (
 	TransactionHashLength = 32
 	ModuleRefLength       = 32
 	hundredThousand       = 100000
+	UpdateSignHashLength  = 32
 )
 
 // WalletAccount an account imported from one of the supported export formats.
@@ -401,6 +403,9 @@ func (BlockHashInputRelativeHeight) isBlockHashInput() {}
 // TransactionHash hash of a transaction. This is always 32 bytes long.
 type TransactionHash struct {
 	Value [TransactionHashLength]byte
+}
+type UpdateSignHash struct {
+	Value [UpdateSignHashLength]byte
 }
 
 // Hex encodes transaction hash to base16 string.
@@ -817,13 +822,13 @@ func (RawPayload) isCredentialDeploymentPayload() {}
 
 // UpdateInstruction messages which can update the chain parameters. Including which keys are allowed
 // to make future update instructions.
-type UpdateInstruction struct {
-	Signatures *SignatureMap
-	Header     *UpdateInstructionHeader
-	Payload    *UpdateInstructionPayload
-}
+//type UpdateInstruction struct {
+//	Signatures *SignatureMap
+//	Header     *UpdateInstructionHeader
+//	Payload    *UpdateInstructionPayload
+//}
 
-func (UpdateInstruction) isBlockItem() {}
+//func (UpdateInstruction) isBlockItem() {}
 
 // SignatureMap wrapper for a map from indexes to signatures.
 // Needed because protobuf doesn't allow nested maps directly.
@@ -831,11 +836,12 @@ type SignatureMap struct {
 	Signatures map[uint32]*Signature
 }
 
-type UpdateInstructionHeader struct {
-	SequenceNumber *UpdateSequenceNumber
-	EffectiveTime  *TransactionTime
-	Timeout        *TransactionTime
-}
+//type UpdateInstructionHeader struct {
+//	SequenceNumber *UpdateSequenceNumber
+//	EffectiveTime  *TransactionTime
+//	Timeout        *TransactionTime
+//	PayloadSize    *PayloadSize
+//}
 
 // UpdateSequenceNumber determines the ordering of update transactions.
 // Equivalent to `SequenceNumber` for account transactions.
@@ -850,10 +856,15 @@ type UpdateInstructionPayload struct {
 }
 
 type isUpdateInstructionPayload interface {
+	Encode() *RawPayload
 	isUpdateInstructionPayload()
 }
 
 func (RawPayload) isUpdateInstructionPayload() {}
+
+func (p *UpdateInstructionPayload) EncodeCBOR() ([]byte, error) {
+	return cbor.Marshal(p)
+}
 
 func ConvertBlockItems(input []*pb.BlockItem) []*BlockItem {
 	var result []*BlockItem
@@ -1018,11 +1029,13 @@ func ConvertBlockItems(input []*pb.BlockItem) []*BlockItem {
 
 			var updInstructionPayload = UpdateInstructionPayload{}
 
+			var payloadSize uint32
 			switch t := k.UpdateInstruction.Payload.Payload.(type) {
 			case *pb.UpdateInstructionPayload_RawPayload:
 				updInstructionPayload.Payload = &RawPayload{
 					Value: t.RawPayload,
 				}
+				payloadSize = uint32(len(t.RawPayload))
 			}
 
 			blockItem.BlockItem = &UpdateInstruction{
@@ -1036,6 +1049,9 @@ func ConvertBlockItems(input []*pb.BlockItem) []*BlockItem {
 					},
 					Timeout: &TransactionTime{
 						Value: k.UpdateInstruction.Header.Timeout.Value,
+					},
+					PayloadSize: &PayloadSize{
+						Value: payloadSize,
 					},
 				},
 				Payload: &updInstructionPayload,
