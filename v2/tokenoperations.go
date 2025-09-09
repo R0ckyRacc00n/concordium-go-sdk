@@ -1,7 +1,6 @@
 package v2
 
 import (
-	"github.com/Concordium/concordium-go-sdk/v2/pb"
 	"github.com/fxamacker/cbor/v2"
 )
 
@@ -149,14 +148,14 @@ func (op *UnknownOperation) EncodeCBOR() ([]byte, error) {
 }
 
 type TokenSupplyUpdateDetails struct {
-	Amount pb.TokenAmount
+	Amount TokenAmount
 }
 type TokenPauseDetails struct{}
 type TokenListUpdateDetails struct {
 	Target CborTokenHolder
 }
 type TokenTransfer struct {
-	Amount    pb.TokenAmount
+	Amount    TokenAmount
 	Recipient CborTokenHolder
 	Memo      CborMemo
 }
