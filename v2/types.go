@@ -779,7 +779,8 @@ type TokenUpdate struct {
 	Payload *TokenOperationsPayload
 }
 
-func (TokenUpdate) isAccountTransactionPayload() {}
+func (tokenUpdate TokenUpdate) isUpdateInstructionPayload()  {}
+func (tokenUpdate TokenUpdate) isAccountTransactionPayload() {}
 func (tokenUpdate TokenUpdate) Encode() *RawPayload {
 	return tokenUpdate.Payload.Encode()
 }

@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"github.com/fxamacker/cbor/v2"
 
 	"github.com/Concordium/concordium-go-sdk/v2/pb"
@@ -119,6 +120,30 @@ func (kp *UpdateKeyPair) Sign(msg []byte) Signature {
 // WalletUpdateSigner holds update keys and implements UpdateSigner.
 type WalletUpdateSigner struct {
 	Keys map[UpdateKeysIndex]*UpdateKeyPair
+}
+
+// signer TransactionSigner, header *AccountTransactionHeader, payload *AccountTransactionPayload
+func signUpdate(signer UpdateSigner, header *UpdateInstructionHeader, payload *UpdateInstructionPayload) (*UpdateInstruction, error) {
+	hashToSign, err := ComputeUpdateSignHash(header, payload)
+	if err != nil {
+		return nil, fmt.Errorf("failed to compute update sign hash: %w", err)
+	}
+
+	signature, err := signer.SignUpdateHash(hashToSign)
+	if err != nil {
+		return nil, fmt.Errorf("failed to sign update hash: %w", err)
+	}
+
+	return &UpdateInstruction{
+		Signatures: &signature.Signatures,
+		Header:     header,
+		Payload:    payload,
+	}, nil
+}
+
+// Sign signs PreAccountTransaction with TransactionSigner and returns AccountTransaction.
+func (preUpdateInstruction *PreUpdateInstruction) Sign(signer UpdateSigner) (*UpdateInstruction, error) {
+	return signUpdate(signer, preUpdateInstruction.Header, preUpdateInstruction.Payload)
 }
 
 // SignUpdateHash implements UpdateSigner.
