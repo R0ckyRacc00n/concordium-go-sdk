@@ -8,7 +8,7 @@ import (
 // TokenUpdateOperation
 // / Construct and sign a protocol level token update transaction consisting
 // / of the token update operations encoded in the given CBOR.
-func TokenUpdateOperation(signer v2.UpdateSigner, nonce v2.SequenceNumber, effectiveTime v2.TransactionTime,
-	expiry v2.TransactionTime, tokenId v2.TokenID, operations v2.TokenOperations) (*v2.UpdateInstruction, error) {
-	return construct.TokenUpdateOperation(nonce, effectiveTime, expiry, tokenId, operations).Sign(signer)
+func TokenUpdateOperation(sender v2.AccountAddress, signer v2.ExactSizeTransactionSigner, nonce v2.SequenceNumber, effectiveTime v2.TransactionTime,
+	expiry v2.TransactionTime, tokenId v2.TokenID, operations v2.TokenOperations) (*v2.AccountTransaction, error) {
+	return construct.TokenUpdateOperation(signer.NumberOfKeys(), sender, nonce, expiry, tokenId, operations).Sign(signer)
 }

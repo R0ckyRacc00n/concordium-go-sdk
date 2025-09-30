@@ -5,27 +5,24 @@ import (
 	"github.com/fxamacker/cbor/v2"
 )
 
-func TokenUpdateOperation(nonce v2.SequenceNumber, effectiveTime v2.TransactionTime, expiry v2.TransactionTime,
-	tokenId v2.TokenID, operations v2.TokenOperations,
-) *v2.PreUpdateInstruction {
+func TokenUpdateOperation(numSigs uint32, sender v2.AccountAddress, nonce v2.SequenceNumber, expiry v2.TransactionTime, tokenId v2.TokenID, operations v2.TokenOperations,
+) *v2.PreAccountTransaction {
+	txEnergy := operations.TxnEnergy()
+	energy := &v2.GivenEnergy{Energy: &v2.AddEnergy{
+		NumSigs: numSigs,
+		Energy:  *txEnergy,
+	}}
 	rawOps, err := MarshalTokenOperationsToCBORArray(operations)
 	if err != nil {
 		panic("failed to marshal operations: " + err.Error())
 	}
 
-	payload := &v2.UpdateInstructionPayload{Payload: &v2.TokenUpdate{Payload: &v2.TokenOperationsPayload{TokenId: tokenId,
-		Operations: rawOps}}}
+	payload := &v2.TokenUpdate{Payload: &v2.TokenOperationsPayload{
+		TokenId:    tokenId,
+		Operations: rawOps}}
 
-	return makeTransactionUpd(effectiveTime, nonce, expiry, payload)
+	return makeTransaction(sender, nonce, expiry, energy, &v2.AccountTransactionPayload{Payload: payload})
 }
-
-//func TokenOperationsTxnEnergy(ops v2.TokenOperations) v2.Energy {
-//	total := v2.PltOperationsTransactions
-//	for _, op := range ops {
-//		total += op.TxnEnergy().Value
-//	}
-//	return v2.Energy{Value: total}
-//}
 
 func MarshalTokenOperationsToCBORArray(ops v2.TokenOperations) (v2.RawCBOR, error) {
 	var encodedItems [][]byte
