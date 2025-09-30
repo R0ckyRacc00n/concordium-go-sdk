@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Concordium/concordium-go-sdk/v2/pb"
 	"github.com/fxamacker/cbor/v2"
 )
 
@@ -19,7 +18,7 @@ func TestTokenOperations_MarshalUnmarshal(t *testing.T) {
 			name: "TransferOperation",
 			op: &v2.TransferOperation{
 				Transfer: v2.TokenTransfer{
-					Amount:    pb.TokenAmount{Value: 42},
+					Amount:    v2.TokenAmount{Value: 42},
 					Recipient: v2.CborTokenHolder{},
 					Memo:      v2.CborMemo{},
 				},
@@ -28,12 +27,12 @@ func TestTokenOperations_MarshalUnmarshal(t *testing.T) {
 		},
 		{
 			name: "MintOperation",
-			op:   &v2.MintOperation{Details: v2.TokenSupplyUpdateDetails{Amount: pb.TokenAmount{Value: 99}}},
+			op:   &v2.MintOperation{Details: v2.TokenSupplyUpdateDetails{Amount: v2.TokenAmount{Value: 99}}},
 			new:  func() v2.TokenOperation { return &v2.MintOperation{} },
 		},
 		{
 			name: "BurnOperation",
-			op:   &v2.BurnOperation{Details: v2.TokenSupplyUpdateDetails{Amount: pb.TokenAmount{Value: 77}}},
+			op:   &v2.BurnOperation{Details: v2.TokenSupplyUpdateDetails{Amount: v2.TokenAmount{Value: 77}}},
 			new:  func() v2.TokenOperation { return &v2.BurnOperation{} },
 		},
 		{

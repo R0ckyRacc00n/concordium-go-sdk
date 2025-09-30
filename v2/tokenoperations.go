@@ -11,15 +11,19 @@ const (
 
 	// PltMint
 	// Additional cost of a PLT mint.
-	PltMint uint64 = 100
+	PltMint uint64 = 50
 
 	// PltBurn
 	// Additional cost of a PLT burn.
-	PltBurn uint64 = 100
+	PltBurn uint64 = 50
 
 	// PltListUpdate
 	// Additional cost of a PLT allow or deny list update.
 	PltListUpdate uint64 = 50
+
+	// PltPause
+	// Additional cost of a PLT pausing.
+	PltPause uint64 = 50
 
 	// PltOperationsTransactions
 	// Additional cost of a transaction consisting of protocol level token
@@ -31,6 +35,17 @@ const (
 
 // TokenOperations enum.
 type TokenOperations []TokenOperation
+
+// TxnEnergy returns the total energy cost of all operations in the list.
+func (ops TokenOperations) TxnEnergy() *Energy {
+	total := uint64(0)
+	for _, op := range ops {
+		if op != nil {
+			total += op.TxnEnergy().Value
+		}
+	}
+	return &Energy{Value: total}
+}
 
 type TokenOperation interface {
 	TxnEnergy() *Energy
@@ -120,7 +135,7 @@ type PauseOperation struct {
 
 func (*PauseOperation) TxnEnergy() *Energy {
 	// TODO: Should have some fixed energy cost.
-	return &Energy{}
+	return &Energy{Value: PltPause}
 }
 func (op *PauseOperation) EncodeCBOR() ([]byte, error) {
 	return cbor.Marshal(op)

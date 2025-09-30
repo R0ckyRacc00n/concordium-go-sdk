@@ -821,28 +821,11 @@ type isCredentialDeploymentPayload interface {
 
 func (RawPayload) isCredentialDeploymentPayload() {}
 
-// UpdateInstruction messages which can update the chain parameters. Including which keys are allowed
-// to make future update instructions.
-//type UpdateInstruction struct {
-//	Signatures *SignatureMap
-//	Header     *UpdateInstructionHeader
-//	Payload    *UpdateInstructionPayload
-//}
-
-//func (UpdateInstruction) isBlockItem() {}
-
 // SignatureMap wrapper for a map from indexes to signatures.
 // Needed because protobuf doesn't allow nested maps directly.
 type SignatureMap struct {
 	Signatures map[uint32]*Signature
 }
-
-//type UpdateInstructionHeader struct {
-//	SequenceNumber *UpdateSequenceNumber
-//	EffectiveTime  *TransactionTime
-//	Timeout        *TransactionTime
-//	PayloadSize    *PayloadSize
-//}
 
 // UpdateSequenceNumber determines the ordering of update transactions.
 // Equivalent to `SequenceNumber` for account transactions.
@@ -1048,7 +1031,7 @@ func ConvertBlockItems(input []*pb.BlockItem) []*BlockItem {
 					EffectiveTime: &TransactionTime{
 						Value: k.UpdateInstruction.Header.EffectiveTime.Value,
 					},
-					Timeout: &TransactionTime{
+					Expiry: &TransactionTime{
 						Value: k.UpdateInstruction.Header.Timeout.Value,
 					},
 					PayloadSize: &PayloadSize{

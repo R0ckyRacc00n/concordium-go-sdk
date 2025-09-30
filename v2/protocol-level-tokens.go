@@ -27,13 +27,13 @@ type TokenModuleRef struct {
 // TokenAmount PLT amount representation. Actual amount = value * 10^(-decimals).
 type TokenAmount struct {
 	Value    uint64
-	Decimals uint32
+	Decimals uint8
 }
 
 // TokenState Token state at the block level
 type TokenState struct {
 	TokenModuleRef TokenModuleRef
-	Decimals       uint32
+	Decimals       uint8
 	TotalSupply    TokenAmount
 	ModuleState    Cbor
 }

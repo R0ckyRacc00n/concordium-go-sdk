@@ -16,7 +16,7 @@ func newTransactionBuilderUpd(effectiveTime v2.TransactionTime, nonce v2.Sequenc
 	header := &v2.UpdateInstructionHeader{
 		SequenceNumber: (*v2.UpdateSequenceNumber)(&nonce),
 		EffectiveTime:  &effectiveTime,
-		Timeout:        &expiry,
+		Expiry:         &expiry,
 		PayloadSize:    &payloadSize,
 	}
 	return &transactionBuilderUpd{

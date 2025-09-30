@@ -19506,7 +19506,7 @@ func (x *PersistentRoundStatus) GetLatestTimeout() *RawTimeoutCertificate {
 
 type RoundTimeout struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Timeout certificate for the round that timed out.
+	// Expiry certificate for the round that timed out.
 	TimeoutCertificate *RawTimeoutCertificate `protobuf:"bytes,1,opt,name=timeout_certificate,json=timeoutCertificate,proto3" json:"timeout_certificate,omitempty"`
 	// The highest known quorum certificate when the round timed out.
 	QuorumCertificate *RawQuorumCertificate `protobuf:"bytes,2,opt,name=quorum_certificate,json=quorumCertificate,proto3" json:"quorum_certificate,omitempty"`
