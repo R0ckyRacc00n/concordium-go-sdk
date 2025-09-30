@@ -24,7 +24,7 @@ type UpdateInstructionHeader struct {
 	// Time at which this update becomes effective.
 	EffectiveTime *TransactionTime
 	// Latest time the update instruction can be included in a block.
-	Expiry *TransactionTime
+	Timeout *TransactionTime
 	// Size of the transaction payload.
 	PayloadSize *PayloadSize
 }
@@ -34,7 +34,7 @@ func (header *UpdateInstructionHeader) Serialize() []byte {
 	buf := make([]byte, 0, UpdateInstructionHeaderSize)
 	buf = binary.BigEndian.AppendUint64(buf, header.SequenceNumber.Value)
 	buf = binary.BigEndian.AppendUint64(buf, header.EffectiveTime.Value)
-	buf = binary.BigEndian.AppendUint64(buf, header.Expiry.Value)
+	buf = binary.BigEndian.AppendUint64(buf, header.Timeout.Value)
 	buf = binary.BigEndian.AppendUint32(buf, header.PayloadSize.Value)
 
 	return buf
@@ -81,7 +81,7 @@ func (updateInstruction *UpdateInstruction) Send(ctx context.Context, client *Cl
 		Header: &pb.UpdateInstructionHeader{
 			SequenceNumber: &pb.UpdateSequenceNumber{Value: updateInstruction.Header.SequenceNumber.Value},
 			EffectiveTime:  &pb.TransactionTime{Value: updateInstruction.Header.EffectiveTime.Value},
-			Timeout:        &pb.TransactionTime{Value: updateInstruction.Header.Expiry.Value},
+			Timeout:        &pb.TransactionTime{Value: updateInstruction.Header.Timeout.Value},
 		},
 		Payload: &pb.UpdateInstructionPayload{
 			Payload: &pb.UpdateInstructionPayload_RawPayload{

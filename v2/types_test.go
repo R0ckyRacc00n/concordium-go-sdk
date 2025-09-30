@@ -150,7 +150,7 @@ func TestConvertBlockItems(t *testing.T) {
 		case *pb.BlockItem_UpdateInstruction:
 			tx, ok := convert[0].BlockItem.(*v2.UpdateInstruction)
 			if ok {
-				require.Equal(t, item.UpdateInstruction.Header.Timeout.Value, tx.Header.Expiry.Value)
+				require.Equal(t, item.UpdateInstruction.Header.Timeout.Value, tx.Header.Timeout.Value)
 				require.Equal(t, item.UpdateInstruction.Header.SequenceNumber.Value, tx.Header.SequenceNumber.Value)
 				require.Equal(t, item.UpdateInstruction.Header.EffectiveTime.Value, tx.Header.EffectiveTime.Value)
 				require.Equal(t, item.UpdateInstruction.Signatures.Signatures[1].Value, tx.Signatures.Signatures[1].Value)

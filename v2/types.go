@@ -1031,7 +1031,7 @@ func ConvertBlockItems(input []*pb.BlockItem) []*BlockItem {
 					EffectiveTime: &TransactionTime{
 						Value: k.UpdateInstruction.Header.EffectiveTime.Value,
 					},
-					Expiry: &TransactionTime{
+					Timeout: &TransactionTime{
 						Value: k.UpdateInstruction.Header.Timeout.Value,
 					},
 					PayloadSize: &PayloadSize{

@@ -11,7 +11,7 @@ func Update(seqNumber v2.UpdateSequenceNumber, effectiveTime v2.TransactionTime,
 	header := &v2.UpdateInstructionHeader{
 		SequenceNumber: &seqNumber,
 		EffectiveTime:  &effectiveTime,
-		Expiry:         &timeout,
+		Timeout:        &timeout,
 		PayloadSize:    &payloadSize,
 	}
 
