@@ -12,7 +12,7 @@ type CreatePLTPayload struct {
 	TokenId                  TokenId
 	TokenModule              TokenModuleRef
 	Decimals                 uint32
-	InitializationParameters Cbor
+	InitializationParameters RawCBOR
 }
 
 func (c *CreatePLTPayload) EncodeCBOR() ([]byte, error) {

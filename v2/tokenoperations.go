@@ -30,6 +30,7 @@ const (
 	// operations.
 	PltOperationsTransactions uint64 = 300
 
+	// CCDCoinInfo 919 is the BIP-0044 SLIP coin type code for CCD.
 	CCDCoinInfo CoinInfo = 919
 )
 
@@ -134,7 +135,6 @@ type PauseOperation struct {
 }
 
 func (*PauseOperation) TxnEnergy() *Energy {
-	// TODO: Should have some fixed energy cost.
 	return &Energy{Value: PltPause}
 }
 func (op *PauseOperation) EncodeCBOR() ([]byte, error) {

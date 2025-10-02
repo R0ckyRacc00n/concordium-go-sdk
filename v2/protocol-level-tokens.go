@@ -8,11 +8,6 @@ import (
 	"io"
 )
 
-// Cbor A CBOR encoded bytestring
-type Cbor struct {
-	Value []byte
-}
-
 // TokenId Token ID: a unique symbol and identifier of a protocol level token.
 type TokenId struct {
 	// Between 1 and 128 characters, consisting of a-z, A-Z, 0-9, `.`, `%` and `-`.
@@ -35,19 +30,19 @@ type TokenState struct {
 	TokenModuleRef TokenModuleRef
 	Decimals       uint8
 	TotalSupply    TokenAmount
-	ModuleState    Cbor
+	ModuleState    RawCBOR
 }
 
 // TokenAccountState Token state at the account level
 type TokenAccountState struct {
 	Balance     TokenAmount
-	ModuleState *Cbor // optional
+	ModuleState *RawCBOR // optional
 }
 
 // TokenModuleEvent Single token event originating from a token module
 type TokenModuleEvent struct {
 	Type    string
-	Details Cbor
+	Details RawCBOR
 }
 
 // TokenHolder A token holder entity
@@ -88,7 +83,7 @@ type TokenEffect struct {
 type TokenModuleRejectReason struct {
 	TokenId TokenId
 	Type    string
-	Details *Cbor // optional
+	Details *RawCBOR // optional
 }
 
 // TokenCreationDetails Details about the creation of a protocol-level token.
