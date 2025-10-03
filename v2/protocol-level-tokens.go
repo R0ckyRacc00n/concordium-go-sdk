@@ -92,7 +92,7 @@ type TokenCreationDetails struct {
 	Events    []TokenEvent
 }
 
-// Convert protobuf TokenId → SDK TokenID
+// Convert protobuf TokenId → SDK TokenId
 func convertTokenIdFromPB(pbToken *pb.TokenId) *TokenId {
 	if pbToken == nil {
 		return nil
@@ -100,7 +100,7 @@ func convertTokenIdFromPB(pbToken *pb.TokenId) *TokenId {
 	return &TokenId{pbToken.Value}
 }
 
-// Convert SDK TokenID → protobuf
+// Convert SDK TokenId → protobuf
 func convertTokenIdToPB(token *TokenId) *pb.TokenId {
 	if token == nil {
 		return nil
@@ -139,6 +139,5 @@ func (c *Client) GetTokenInfo(ctx context.Context, blockHash BlockHashInput, tok
 	if err != nil {
 		return nil, fmt.Errorf("failed to get token info: %w", err)
 	}
-
 	return info, nil
 }

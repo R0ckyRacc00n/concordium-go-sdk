@@ -501,11 +501,10 @@ func (payload *UpdateContractPayload) Size() int {
 // / [`TokenOperationsPayload::decode_operations`]. Operations includes
 // / governance operations, transfers etc.
 type TokenOperationsPayload struct {
-	TokenId    TokenID
+	TokenId    TokenId
 	Operations RawCBOR
 }
 
-type TokenID []byte
 type RawCBOR struct {
 	Bytes []byte
 }
@@ -513,20 +512,19 @@ type RawCBOR struct {
 func (payload *TokenOperationsPayload) isAccountTransactionPayload() {}
 
 func (payload *TokenOperationsPayload) Size() int {
-	if payload.TokenId == nil {
-		payload.TokenId = make(TokenID, 0)
-	}
-	if payload.Operations.Bytes == nil {
-		payload.Operations.Bytes = make([]byte, 0)
-	}
-	return 2 + len(payload.TokenId) + 2 + len(payload.Operations.Bytes)
+	tokenBytes := []byte(payload.TokenId.Value)
+	cborBytes := payload.Operations.Bytes
+
+	return 2 + len(tokenBytes) + // TokenID length + TokenID
+		2 + len(cborBytes) // CBOR length + CBOR
 }
 
 func (payload *TokenOperationsPayload) Encode() *RawPayload {
+	tokenBytes := []byte(payload.TokenId.Value)
 	buf := make([]byte, 0, payload.Size()+1)
 	buf = append(buf, byte(TokenUpdatePayloadType))
-	buf = binary.BigEndian.AppendUint16(buf, uint16(len(payload.TokenId)))
-	buf = append(buf, payload.TokenId...)
+	buf = binary.BigEndian.AppendUint16(buf, uint16(len(tokenBytes)))
+	buf = append(buf, tokenBytes...)
 	buf = binary.BigEndian.AppendUint16(buf, uint16(len(payload.Operations.Bytes)))
 	buf = append(buf, payload.Operations.Bytes...)
 
@@ -546,8 +544,8 @@ func (payload *TokenOperationsPayload) Decode(source []byte) error {
 	}
 
 	// Read TokenID.
-	payload.TokenId = make(TokenID, tokenIDLen)
-	copy(payload.TokenId, source[2:2+tokenIDLen])
+	tokenBytes := source[2 : 2+tokenIDLen]
+	payload.TokenId = TokenId{Value: string(tokenBytes)}
 
 	// Read RawCBOR length.
 	cborStart := 2 + tokenIDLen

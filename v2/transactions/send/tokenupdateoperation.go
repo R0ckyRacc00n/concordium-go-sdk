@@ -9,6 +9,6 @@ import (
 // / Construct and sign a protocol level token update transaction consisting
 // / of the token update operations encoded in the given CBOR.
 func TokenUpdateOperation(sender v2.AccountAddress, signer v2.ExactSizeTransactionSigner, nonce v2.SequenceNumber,
-	expiry v2.TransactionTime, tokenId v2.TokenID, operations v2.TokenOperations) (*v2.AccountTransaction, error) {
+	expiry v2.TransactionTime, tokenId v2.TokenId, operations v2.TokenOperations) (*v2.AccountTransaction, error) {
 	return construct.TokenUpdateOperation(signer.NumberOfKeys(), sender, nonce, expiry, tokenId, operations).Sign(signer)
 }

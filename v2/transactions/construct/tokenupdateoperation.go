@@ -5,7 +5,7 @@ import (
 	"github.com/fxamacker/cbor/v2"
 )
 
-func TokenUpdateOperation(numSigs uint32, sender v2.AccountAddress, nonce v2.SequenceNumber, expiry v2.TransactionTime, tokenId v2.TokenID, operations v2.TokenOperations,
+func TokenUpdateOperation(numSigs uint32, sender v2.AccountAddress, nonce v2.SequenceNumber, expiry v2.TransactionTime, tokenId v2.TokenId, operations v2.TokenOperations,
 ) *v2.PreAccountTransaction {
 	txEnergy := operations.TxnEnergy()
 	energy := &v2.GivenEnergy{Energy: &v2.AddEnergy{
