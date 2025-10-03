@@ -367,6 +367,11 @@ func convertBlockHashInput(req isBlockHashInput) (_ *pb.BlockHashInput) {
 	return res
 }
 
+// BlockHashInput SDK-facing of type.
+type BlockHashInput interface {
+	isBlockHashInput()
+}
+
 // BlockHashInputBest query for the best block.
 type BlockHashInputBest struct{}
 

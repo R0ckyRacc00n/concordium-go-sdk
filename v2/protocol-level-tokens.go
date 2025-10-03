@@ -92,13 +92,29 @@ type TokenCreationDetails struct {
 	Events    []TokenEvent
 }
 
-func (c *Client) GetPLTList(ctx context.Context, blockHash *pb.BlockHashInput) ([]*pb.TokenId, error) {
-	stream, err := c.GrpcClient.GetTokenList(ctx, blockHash)
+// Convert protobuf TokenId → SDK TokenID
+func convertTokenIdFromPB(pbToken *pb.TokenId) *TokenId {
+	if pbToken == nil {
+		return nil
+	}
+	return &TokenId{pbToken.Value}
+}
+
+// Convert SDK TokenID → protobuf
+func convertTokenIdToPB(token *TokenId) *pb.TokenId {
+	if token == nil {
+		return nil
+	}
+	return &pb.TokenId{Value: token.Value}
+}
+
+func (c *Client) GetPLTList(ctx context.Context, blockHash BlockHashInputBest) ([]TokenId, error) {
+	stream, err := c.GrpcClient.GetTokenList(ctx, convertBlockHashInput(blockHash))
 	if err != nil {
 		return nil, fmt.Errorf("failed to call GetTokenList: %w", err)
 	}
 
-	var tokens []*pb.TokenId
+	var tokens []TokenId
 	for {
 		token, err := stream.Recv()
 		if errors.Is(err, io.EOF) {
@@ -107,16 +123,16 @@ func (c *Client) GetPLTList(ctx context.Context, blockHash *pb.BlockHashInput) (
 		if err != nil {
 			return nil, fmt.Errorf("error reading token stream: %w", err)
 		}
-		tokens = append(tokens, token)
+		tokens = append(tokens, *convertTokenIdFromPB(token))
 	}
 
 	return tokens, nil
 }
 
-func (c *Client) GetTokenInfo(ctx context.Context, blockHash *pb.BlockHashInput, tokenId *pb.TokenId) (*pb.TokenInfo, error) {
+func (c *Client) GetTokenInfo(ctx context.Context, blockHash BlockHashInput, tokenId *TokenId) (*pb.TokenInfo, error) {
 	req := &pb.TokenInfoRequest{
-		BlockHash: blockHash,
-		TokenId:   tokenId,
+		BlockHash: convertBlockHashInput(blockHash),
+		TokenId:   convertTokenIdToPB(tokenId),
 	}
 
 	info, err := c.GrpcClient.GetTokenInfo(ctx, req)
