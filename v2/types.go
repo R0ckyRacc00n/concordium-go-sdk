@@ -243,6 +243,27 @@ type AccountThreshold struct {
 	Value uint8
 }
 
+type Nonce struct {
+	Value uint64
+}
+
+type AccountIndex struct {
+	Value uint64
+}
+
+type AccountEncryptedAmount struct {
+	SelfAmount       *EncryptedAmount
+	StartIndex       uint64
+	AggregatedAmount *EncryptedAmount
+	IncomingAmounts  []*EncryptedAmount
+}
+
+// EncryptedAmount represents an encrypted amount on-chain.
+// It mirrors pb.EncryptedAmount but does not expose protobuf internals.
+type EncryptedAmount struct {
+	Value []byte
+}
+
 // SignatureThreshold threshold for the number of signatures required.
 // The values of this type must maintain the property that they are not 0.
 type SignatureThreshold struct {

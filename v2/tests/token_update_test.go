@@ -15,12 +15,12 @@ func TestUpdateTokenPayloads(t *testing.T) {
 	copy(moduleRef.Value[:], bytes.Repeat([]byte{1, 2}, 16))
 
 	t.Run("updateToken encode/decode", func(t *testing.T) {
-		tokenId := []byte{0x01, 0x02, 0x03}
+		tokenId := "010203"
 		rawCBOR := []byte{0xa1, 0x63, 0x66, 0x6f, 0x6f, 0x63, 0x62, 0x61, 0x72} // CBOR map: {"foo": "bar"}
 
 		tokenUpdatePayload := &v2.TokenUpdate{
 			Payload: &v2.TokenOperationsPayload{
-				TokenId: tokenId,
+				TokenId: v2.TokenId{Value: tokenId},
 				Operations: v2.RawCBOR{
 					Bytes: rawCBOR,
 				},

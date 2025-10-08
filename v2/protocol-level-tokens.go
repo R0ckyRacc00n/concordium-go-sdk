@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Concordium/concordium-go-sdk/v2/pb"
+	"github.com/fxamacker/cbor/v2"
 	"io"
 )
 
@@ -31,12 +32,6 @@ type TokenState struct {
 	Decimals       uint8
 	TotalSupply    TokenAmount
 	ModuleState    RawCBOR
-}
-
-// TokenAccountState Token state at the account level
-type TokenAccountState struct {
-	Balance     TokenAmount
-	ModuleState *RawCBOR // optional
 }
 
 // TokenModuleEvent Single token event originating from a token module
@@ -129,15 +124,73 @@ func (c *Client) GetPLTList(ctx context.Context, blockHash BlockHashInputBest) (
 	return tokens, nil
 }
 
-func (c *Client) GetTokenInfo(ctx context.Context, blockHash BlockHashInput, tokenId *TokenId) (*pb.TokenInfo, error) {
+// TokenInfo represents high-level token information returned by the node.
+type TokenInfo struct {
+	TokenId    *TokenId    `json:"token_id,omitempty"`
+	TokenState *TokenState `json:"token_state,omitempty"`
+}
+
+func (c *Client) GetTokenInfo(ctx context.Context, blockHash BlockHashInput, tokenId *TokenId) (*TokenInfo, error) {
 	req := &pb.TokenInfoRequest{
 		BlockHash: convertBlockHashInput(blockHash),
 		TokenId:   convertTokenIdToPB(tokenId),
 	}
 
-	info, err := c.GrpcClient.GetTokenInfo(ctx, req)
+	resp, err := c.GrpcClient.GetTokenInfo(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get token info: %w", err)
 	}
-	return info, nil
+
+	if resp == nil {
+		return nil, fmt.Errorf("empty response from GetTokenInfo")
+	}
+
+	var tokenState *TokenState
+	if resp.TokenState != nil {
+		tokenState = &TokenState{
+			ModuleState: RawCBOR{
+				Bytes: resp.TokenState.ModuleState.Value,
+			},
+		}
+	}
+
+	tokenInfo := &TokenInfo{
+		TokenId:    &TokenId{Value: resp.TokenId.Value},
+		TokenState: tokenState,
+	}
+
+	return tokenInfo, nil
+}
+
+type MetadataUrl struct {
+	Url  string `cbor:"url"`
+	Hash Hash   `cbor:"hash,omitempty"`
+}
+type Hash struct {
+	Bytes [32]byte
+}
+
+type TokenModuleState struct {
+	Name              *string                `cbor:"name,omitempty"`
+	Metadata          *MetadataUrl           `cbor:"metadata,omitempty"`
+	GovernanceAccount *CborHolderAccount     `cbor:"governance_account,omitempty"`
+	AllowList         *bool                  `cbor:"allow_list,omitempty"`
+	DenyList          *bool                  `cbor:"deny_list,omitempty"`
+	Mintable          *bool                  `cbor:"mintable,omitempty"`
+	Burnable          *bool                  `cbor:"burnable,omitempty"`
+	Paused            *bool                  `cbor:"paused,omitempty"`
+	Additional        map[string]interface{} `cbor:",omitempty"`
+}
+
+func (s *TokenState) DecodeModuleState() (*TokenModuleState, error) {
+	if s == nil || len(s.ModuleState.Bytes) == 0 {
+		return nil, fmt.Errorf("empty module state")
+	}
+
+	var decoded TokenModuleState
+	if err := cbor.Unmarshal(s.ModuleState.Bytes, &decoded); err != nil {
+		return nil, fmt.Errorf("failed to decode module state: %w", err)
+	}
+
+	return &decoded, nil
 }
