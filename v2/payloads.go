@@ -523,11 +523,10 @@ func (payload *TokenOperationsPayload) Encode() *RawPayload {
 	tokenBytes := []byte(payload.TokenId.Value)
 	buf := make([]byte, 0, payload.Size()+1)
 	buf = append(buf, byte(TokenUpdatePayloadType))
-	buf = binary.BigEndian.AppendUint16(buf, uint16(len(tokenBytes)))
+	buf = append(buf, uint8(len(tokenBytes)))
 	buf = append(buf, tokenBytes...)
-	buf = binary.BigEndian.AppendUint16(buf, uint16(len(payload.Operations.Bytes)))
+	buf = binary.BigEndian.AppendUint32(buf, uint32(len(payload.Operations.Bytes)))
 	buf = append(buf, payload.Operations.Bytes...)
-
 	return &RawPayload{Value: buf}
 }
 

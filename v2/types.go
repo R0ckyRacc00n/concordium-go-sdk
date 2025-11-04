@@ -8,9 +8,10 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/Concordium/concordium-go-sdk/v2/pb"
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/fxamacker/cbor/v2"
+
+	"github.com/Concordium/concordium-go-sdk/v2/pb"
 )
 
 const (
@@ -20,6 +21,7 @@ const (
 	ModuleRefLength       = 32
 	hundredThousand       = 100000
 	UpdateSignHashLength  = 32
+	AccountHolderTag      = 40307
 )
 
 // WalletAccount an account imported from one of the supported export formats.
@@ -284,6 +286,14 @@ func (a *AccountAddress) isAddress() {}
 // ToBase58 encodes account address to string.
 func (a *AccountAddress) ToBase58() string {
 	return base58.CheckEncode(a.Value[:], 1)
+}
+
+func (a *AccountAddress) MarshalCBOR() ([]byte, error) {
+	enc, _ := cbor.EncOptions{}.EncMode()
+	return enc.Marshal(cbor.Tag{
+		Number:  AccountHolderTag, // Concordium account address tag
+		Content: a.Value[:],
+	})
 }
 
 // AccountAddressFromString decodes string to account.
