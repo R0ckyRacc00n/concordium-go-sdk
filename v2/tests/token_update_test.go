@@ -20,11 +20,11 @@ func TestUpdateTokenPayloads(t *testing.T) {
 		rawCBOR := []byte{0xa1, 0x63, 0x66, 0x6f, 0x6f, 0x63, 0x62, 0x61, 0x72} // CBOR map: {"foo": "bar"}
 
 		// Construct raw payload strictly according to TokenOperationsPayload.Decode contract:
-		// [2 bytes tokenLen][token bytes][2 bytes cborLen][cbor bytes]
+		// [1 byte tokenLen][token bytes][4 bytes cborLen][cbor bytes]
 		var rawPayload []byte
-		rawPayload = binary.BigEndian.AppendUint16(rawPayload, uint16(len(tokenId)))
+		rawPayload = append(rawPayload, byte(len(tokenId)))
 		rawPayload = append(rawPayload, []byte(tokenId)...)
-		rawPayload = binary.BigEndian.AppendUint16(rawPayload, uint16(len(rawCBOR)))
+		rawPayload = binary.BigEndian.AppendUint32(rawPayload, uint32(len(rawCBOR)))
 		rawPayload = append(rawPayload, rawCBOR...)
 
 		decodedPayload := &v2.TokenOperationsPayload{}
